@@ -67,7 +67,7 @@ int InsertData(char *key, int keySize, char *pBuf, int bufSize) {
 //? 만일 key 값을 찾을 수 없다면 -1를 리턴 한다
 
 int getDataByKey(char *key, int keySize, char *pBuf, int bufSize) {
-    if(lseek(fd, 0, SEEK_SET) == -1){
+    if (lseek(fd, 0, SEEK_SET) == -1) {
         printf("Error lseek\n");
         return -1;
     } // 파일의 시작부터 검색
@@ -102,7 +102,58 @@ int getDataByKey(char *key, int keySize, char *pBuf, int bufSize) {
 }
 
 int RemoveDataByKey(char *key, int keySize) {
+    lseek(fd, 0, SEEK_SET);
+    Block prevBlock;
+    Block block;
+    Block nextBlock;
 
+    while (read(fd, &block, sizeof(Block)) > 0) {
+        // case 1: 앞 뒤 둘 다 블럭이 있는 경우
+        // case 2: 뒤에 블록이 비어있는 경우
+        // case 3: 앞에 블록이 비어있는 경우
+        // case 4: 앞 뒤 둘 다 비어있는 경우
+        if (block.blockState == ALLOC_BLOCK && block.keySize == keySize && memcmp(block.key, key, keySize) == 0) {
+            // 현재 블록을 FREE_BLOCK 상태로 바꿈
+            block.blockState = FREE_BLOCK;
+            lseek(fd, -sizeof(Block), SEEK_CUR);
+            if (write(fd, &block, sizeof(Block)) == -1) {
+                // 변경한 블록 저장 실패
+                printf("Error writing to file\n");
+                return -1;
+            }
+
+            // 뒤에 블록이 비어있는지 확인r
+            if (read(fd, &nextBlock, sizeof(Block)) > 0) {
+                if (nextBlock.blockState == FREE_BLOCK) {
+                    block.blockSize += nextBlock.blockSize;
+                    lseek(fd, -sizeof(Block), SEEK_CUR);
+                    if (write(fd, &block, sizeof(Block)) == -1) {
+                        // 병합한 블록 저장 실패
+                        printf("Error writing to file\n");
+                        return -1;
+                    }
+                }
+            }
+            // 앞에 블록이 비어있는지 확인
+            if (block.tail > 0) {
+                lseek(fd, -sizeof(Block), SEEK_CUR);
+                read(fd, &prevBlock, sizeof(Block));
+                if (prevBlock.blockState == FREE_BLOCK) {
+                    prevBlock.blockSize += block.blockSize;
+                    lseek(fd, -sizeof(Block), SEEK_CUR);
+                    if (write(fd, &prevBlock, sizeof(Block)) == -1) {
+                        // 병합한 블록 저장 실패
+                        printf("Error writing to file\n");
+                        return -1;
+                    }
+                }
+            }
+            return 0; // 성공
+        }
+    }
+
+    // 찾는 키가 없는 경우
+    return -1;
 }
 
 void printBlock() {
@@ -110,14 +161,15 @@ void printBlock() {
     Block block;
     while (read(fd, &block, sizeof(Block)) > 0) {
         //block 전체 출력
-        printf("blockState: %d\n", block.blockState);
-        printf("blockSize: %u\n", block.blockSize);
-        printf("key: %s\n", (block.key != NULL) ? block.key : "NULL");
-        printf("keySize: %d\n", block.keySize);
-        printf("data: %s\n", (block.data != NULL) ? block.data : "NULL");
-        printf("dataSize: %d\n", block.dataSize);
-        printf("tail: %u\n", block.tail);
-        printf("\n\n\n");
+        if (block.blockState == ALLOC_BLOCK) {
+            printf("blockState: %d\n", block.blockState);
+            printf("blockSize: %u\n", block.blockSize);
+            printf("key: %s\n", (block.key != NULL) ? block.key : "NULL");
+            printf("keySize: %d\n", block.keySize);
+            printf("data: %s\n", (block.data != NULL) ? block.data : "NULL");
+            printf("dataSize: %d\n", block.dataSize);
+            printf("tail: %u\n\n", block.tail);
+        }
     }
 }
 
