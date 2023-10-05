@@ -34,31 +34,37 @@ int InsertData(char *key, int keySize, char *pBuf, int bufSize) {
     Block tempBlock;
     int offset = 0;
     while (read(fd, &tempBlock, sizeof(Block)) > 0) {
-        if (tempBlock.blockState == FREE_BLOCK) {
+        if (tempBlock.blockState == FREE_BLOCK && tempBlock.blockSize >= block.blockSize) {
             // 빈 블록을 찾았으면 해당 위치로 이동
             lseek(fd, offset, SEEK_SET);
             break;
+        } else {
+            block.tail = tempBlock.blockSize;
         }
         offset += sizeof(Block);
     }
+    block.blockState = ALLOC_BLOCK;
     if (write(fd, &block, sizeof(Block)) == -1) {
         printf("Error writing to file\n");
         return -1;
     }
 
-    Block remain;
-    remain.blockState = FREE_BLOCK;
-    remain.blockSize = tempBlock.blockSize - block.blockSize;
-    remain.data = NULL;
-    remain.keySize = 0;
-    remain.key = NULL;
-    remain.dataSize = 0;
-    remain.tail = block.blockSize;
+    if(tempBlock.blockSize - block.blockSize > 0){
+        Block remain;
+        remain.blockState = FREE_BLOCK;
+        remain.blockSize = tempBlock.blockSize - block.blockSize;
+        remain.data = NULL;
+        remain.keySize = 0;
+        remain.key = NULL;
+        remain.dataSize = 0;
+        remain.tail = block.blockSize;
 
-    if (write(fd, &remain, sizeof(Block)) == -1) {
-        printf("Error writing to file remain\n");
-        return -1;
+        if (write(fd, &remain, sizeof(Block)) == -1) {
+            printf("Error writing to file remain\n");
+            return -1;
+        }
     }
+
 
     return 0; // 성공
 }
@@ -135,17 +141,16 @@ int RemoveDataByKey(char *key, int keySize) {
                 }
             }
             // 앞에 블록이 비어있는지 확인
-            if (block.tail > 0) {
+
+            lseek(fd, -sizeof(Block), SEEK_CUR);
+            read(fd, &prevBlock, sizeof(Block));
+            if (prevBlock.blockState == FREE_BLOCK) {
+                prevBlock.blockSize += block.blockSize;
                 lseek(fd, -sizeof(Block), SEEK_CUR);
-                read(fd, &prevBlock, sizeof(Block));
-                if (prevBlock.blockState == FREE_BLOCK) {
-                    prevBlock.blockSize += block.blockSize;
-                    lseek(fd, -sizeof(Block), SEEK_CUR);
-                    if (write(fd, &prevBlock, sizeof(Block)) == -1) {
-                        // 병합한 블록 저장 실패
-                        printf("Error writing to file\n");
-                        return -1;
-                    }
+                if (write(fd, &prevBlock, sizeof(Block)) == -1) {
+                    // 병합한 블록 저장 실패
+                    printf("Error writing to file\n");
+                    return -1;
                 }
             }
             return 0; // 성공
@@ -161,15 +166,15 @@ void printBlock() {
     Block block;
     while (read(fd, &block, sizeof(Block)) > 0) {
         //block 전체 출력
-        if (block.blockState == ALLOC_BLOCK) {
-            printf("blockState: %d\n", block.blockState);
-            printf("blockSize: %u\n", block.blockSize);
-            printf("key: %s\n", (block.key != NULL) ? block.key : "NULL");
-            printf("keySize: %d\n", block.keySize);
-            printf("data: %s\n", (block.data != NULL) ? block.data : "NULL");
-            printf("dataSize: %d\n", block.dataSize);
-            printf("tail: %u\n\n", block.tail);
-        }
+//        if (block.blockState == ALLOC_BLOCK) {
+        printf("blockState: %d\n", block.blockState);
+        printf("blockSize: %u\n", block.blockSize);
+        printf("key: %s\n", (block.key != NULL) ? block.key : "NULL");
+        printf("keySize: %d\n", block.keySize);
+        printf("data: %s\n", (block.data != NULL) ? block.data : "NULL");
+        printf("dataSize: %d\n", block.dataSize);
+        printf("tail: %u\n\n", block.tail);
+//        }
     }
 }
 
@@ -201,13 +206,13 @@ void InitStorage(void) {
     }
 
     // MAX_STORAGE_SIZE 크기의 빈 파일 생성
-    lseek(fd, MAX_STORAGE_SIZE - 1, SEEK_SET);
+    lseek(fd, MAX_STORAGE_SIZE,  SEEK_SET);
     lseek(fd, 0, SEEK_SET);
 
     // 초기 블록 메타데이터 추가
     Block initialBlock;
     initialBlock.blockState = FREE_BLOCK;
-    initialBlock.blockSize = MAX_STORAGE_SIZE;
+    initialBlock.blockSize = MAX_STORAGE_SIZE - 1 ;
     initialBlock.key = NULL; // 초기 상태에서는 key와 data가 없습니다.
     initialBlock.keySize = 0;
     initialBlock.data = NULL;
