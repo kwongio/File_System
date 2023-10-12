@@ -1,75 +1,409 @@
 #include "hw1.h"
-#include <stdio.h>
-#include <unistd.h>
+#include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-int main() {
-    Init();
-    InsertData("1", 1, "data1", 5);
-    InsertData("2", 1, "data2", 5);
-    InsertData("3", 1, "data3", 5);
-    InsertData("4", 1, "data4", 5);
-    RemoveDataByKey("2", 1);
-    RemoveDataByKey("3", 1);
-    InsertData( "5", 1, "data5", 5);
-    InsertData( "6", 1, "data6", 5);
+#define KEY_SIZE 4
+#define DATA_SIZE 5
+
+int keySize[KEY_SIZE] = {6, 5, 4, 2};
+int dataSize[DATA_SIZE] = {2, 19, 52, 15, 5};
+
+char *key[KEY_SIZE] = {"system",
+                       "token",
+                       "card",
+                       "ID"};
+
+char *data[DATA_SIZE] = {"Hi",
+                         "KwangwoonUniversity",
+                         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                         "OperatingSystem",
+                         "Apple"};
+
+
+#define MAX_BLOCK_NUM      (1024)
+
+int PrintBlocks(void) {
+
+    Blocks pBuf[MAX_BLOCK_NUM];
+
+
+    int numBlocks = 0;
+
+    printf("Blocks: ");
+    numBlocks = GetBlocks(pBuf, MAX_BLOCK_NUM);
+    for (int i = 0; i < numBlocks; i++) {
+
+        printf("[%s, %s, %d, %d, %d, %d, %d, %d], ",
+               pBuf[i].key, pBuf[i].data,
+               pBuf[i].block.blockOffset, pBuf[i].block.blockState,
+               pBuf[i].block.sizeHead, pBuf[i].block.sizeTail,
+               pBuf[i].block.keySize, pBuf[i].block.dataSize);
+    }
+    printf("\n");
+    return 0;
+
+}
+
+void testcase1(void) {
+    int pKeySize, pBufSize, pTempSize;
+    char *pKey = NULL;
+    char *pBuf = NULL;
+    char *pTemp = NULL;
+    int i, j;
+
+    printf("=======TestCase1=======\n");
+
+    for (i = 0; i < 10; ++i) {
+        for (j = 0; j < 10; ++j) {
+            pKeySize = keySize[i % KEY_SIZE] + 2;
+            pBufSize = dataSize[j % DATA_SIZE] + 2;
+
+            pKey = (char *) malloc(pKeySize);
+            pBuf = (char *) malloc(pBufSize);
+
+            sprintf(pKey, "%s%d%d", key[i % KEY_SIZE], i, j);
+            sprintf(pBuf, "%s%d%d", data[j % DATA_SIZE], i, j);
+
+            if (-1 == InsertData(pKey, pKeySize, pBuf, pBufSize)) {
+                printf("TestCase 1: Fail\n");
+                return;
+            }
+
+            free(pKey);
+            free(pBuf);
+        }
+    }
     printBlock();
-//    InsertData( "1", 1, "data1", 5);
-//    InsertData( "2", 1, "data2", 5);
-//    InsertData( "3", 1, "data3", 5);
-//    InsertData( "4", 1, "data4", 5);
-//    InsertData( "5", 1, "data5", 5);
-//    InsertData( "6", 1, "data6", 5);
-//    InsertData( "7", 1, "data7", 5);
-//    InsertData( "8", 1, "data8", 5);
-//    InsertData( "9", 1, "data9", 5);
-//    InsertData( "10", 2, "data10", 6);
-//    InsertData( "11", 2, "data11", 6);
-//    InsertData( "12", 2, "data12", 6);
-//    InsertData( "13", 2, "data13", 6);
-//
-//
-//
-//
-//    // case 1: 앞 뒤 둘 다 블럭이 있는 경우
-//
-//    printf("====== Case 1 ===============\n");
-//    RemoveDataByKey("2", 1);
-//    printBlock();
-//
-//
-//
-//    // case 2: 뒤에 블록이 비어있는 경우
-//    printf("====== Case 2 ===============\n");
-//    RemoveDataByKey("9", 1);
-//    RemoveDataByKey("8", 1);
-//    printBlock();
-//
-//
-//    // case 3: 앞에 블록이 비어있는 경우
-//    printf("====== Case 3 ===============\n");
-//    RemoveDataByKey("10", 2);
-//    printBlock();
 
-//    // case 4: 앞 뒤 둘 다 비어있는 경우
-//    printf("====== Case 4 ===============\n");
-//    RemoveDataByKey("6", 1);
-//    RemoveDataByKey("4", 1);
-//    RemoveDataByKey("5", 1);
+//    for (i = 9; i >= 0; --i) {
+//        for (j = 0; j < 10; ++j) {
+//            pKeySize = keySize[i % KEY_SIZE] + 2;
+//            pBufSize = dataSize[j % DATA_SIZE] + 2;
+//            pTempSize = dataSize[j % DATA_SIZE] + 2;
 //
-
-//    printBlock();
+//            pKey = (char *) malloc(pKeySize);
+//            pBuf = (char *) malloc(pBufSize);
+//            pTemp = (char *) malloc(pTempSize);
 //
+//            sprintf(pKey, "%s%d%d", key[i % KEY_SIZE], i, j);
+//            sprintf(pBuf, "%s%d%d", data[j % DATA_SIZE], i, j);
+//
+//
+//            printf("==== getdataByKey === %d\n", GetDataByKey(pKey, pKeySize, pTemp, pTempSize));
+//            printf("pKey %s\n", pKey);
+//            printf("pBuf: %s\n", pBuf);
+//
+//            printf("pKey: %s\n", pKey);
+//            printf("pTemp: %s\n", pTemp);
+//            if (strcmp(pBuf, pTemp) != 0) {
+//                printf("TestCase 1: Fail\n");
+//                return;
+//            }
+//
+//            free(pKey);
+//            free(pBuf);
+//            free(pTemp);
+//        }
+//    }
+//    PrintBlocks();
+//
+    printf("TestCase 1: Finish\n");
+}
 
 
+void testcase2(void) {
+    int PRIME_NUM[6] = {2, 3, 5, 7, 11, 13};
+    int isRemoved[100] = {0};
+    int pKeySize, pBufSize;
+    char *pKey = NULL;
+    char *pBuf = NULL;
+    int i, j, k;
+
+    printf("=======TestCase2=======\n");
+
+    for (k = 5; k >= 0; --k) {
+        for (i = 0; i < 10; ++i) {
+            for (j = 0; j < 10; ++j) {
+
+                int idx = i * 10 + j;
+                if (idx % PRIME_NUM[k] != 0) continue;
+
+                pKeySize = keySize[i % KEY_SIZE] + 2;
+                pBufSize = dataSize[j % DATA_SIZE] + 2;
+
+                pKey = (char *) malloc(pKeySize);
+                pBuf = (char *) malloc(pBufSize);
+
+                sprintf(pKey, "%s%d%d", key[i % KEY_SIZE], i, j);
+                sprintf(pBuf, "%s%d%d", data[j % DATA_SIZE], i, j);
+
+                int ret = RemoveDataByKey(pKey, pKeySize);
+
+                if (isRemoved[idx] == 0 && ret == -1) {
+                    printf("TestCase 2: Fail\n");
+                    return;
+                } else if (isRemoved[idx] == 1 && ret != -1) {
+                    printf("TestCase 2: Fail\n");
+                    return;
+                }
+
+                if (-1 != GetDataByKey(pKey, pKeySize, pBuf, pBufSize)) {
+                    printf("TestCase 2: Fail\n");
+                    return;
+                }
+
+                isRemoved[idx] = 1;
+
+                free(pKey);
+                free(pBuf);
+            }
+        }
+    }
+    PrintBlocks();
+
+    for (i = 0; i < 10; ++i) {
+        for (j = 0; j < 10; ++j) {
+
+            int idx = i * 10 + j;
+            if (isRemoved[idx] != 0) continue;
+
+            pKeySize = keySize[i % KEY_SIZE] + 2;
+            pBufSize = dataSize[j % DATA_SIZE] + 2;
+
+            pKey = (char *) malloc(pKeySize);
+            pBuf = (char *) malloc(pBufSize);
+
+            sprintf(pKey, "%s%d%d", key[i % KEY_SIZE], i, j);
+            sprintf(pBuf, "%s%d%d", data[j % DATA_SIZE], i, j);
+
+            int ret = RemoveDataByKey(pKey, pKeySize);
+
+            if (ret == -1) {
+                printf("TestCase 2: Fail\n");
+                return;
+            }
+
+            if (-1 != GetDataByKey(pKey, pKeySize, pBuf, pBufSize)) {
+                printf("TestCase 2: Fail\n");
+                return;
+            }
+
+            isRemoved[idx] = 1;
+
+            free(pKey);
+            free(pBuf);
+        }
+    }
+
+    PrintBlocks();
+    printf("TestCase 2: Finish\n");
+}
 
 
+void testcase3(void) {
+    int pKeySize, pBufSize, pTempSize;
+    char *pKey = NULL;
+    char *pBuf = NULL;
+    char *pTemp = NULL;
+    int i, j;
+    int ret;
+
+    printf("=======TestCase3=======\n");
+
+    for (i = 2; i >= 0; --i) {
+        for (j = 0; j < 10; ++j) {
+            pKeySize = keySize[i] + 1;
+            pBufSize = dataSize[i];
+
+            pKey = (char *) malloc(pKeySize);
+            pBuf = (char *) malloc(pBufSize);
+
+            sprintf(pKey, "%s%d", key[i], j);
+            sprintf(pBuf, "%s", data[i]);
+
+            if (-1 == InsertData(pKey, pKeySize, pBuf, pBufSize)) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            free(pKey);
+            free(pBuf);
+        }
+
+        for (j = 0; j < 10; j += 2) {
+            pKeySize = keySize[i] + 1;
+            pKey = (char *) malloc(pKeySize);
+            sprintf(pKey, "%s%d", key[i], j);
+
+            if (-1 == RemoveDataByKey(pKey, pKeySize)) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            free(pKey);
+        }
+    }
+    PrintBlocks();
+
+    for (i = 2; i >= 0; --i) {
+        for (j = 1; j < 10; j += 2) {
+            pKeySize = keySize[i] + 1;
+            pBufSize = dataSize[i];
+            pTempSize = dataSize[i];
+
+            pKey = (char *) malloc(pKeySize);
+            pBuf = (char *) malloc(pBufSize);
+            pTemp = (char *) malloc(pTempSize);
+
+            sprintf(pKey, "%s%d", key[i], j);
+            sprintf(pBuf, "%s", data[i]);
+
+            GetDataByKey(pKey, pKeySize, pTemp, pTempSize);
+
+            if (strcmp(pBuf, pTemp) != 0) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            if (-1 == RemoveDataByKey(pKey, pKeySize)) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            free(pKey);
+            free(pBuf);
+            free(pTemp);
+        }
+    }
+    PrintBlocks();
+
+    for (i = 0; i < 3; ++i) {
+        for (j = 0; j < (10 >> i); ++j) {
+            pKeySize = keySize[i] + 1;
+            pBufSize = dataSize[i];
+
+            pKey = (char *) malloc(pKeySize);
+            pBuf = (char *) malloc(pBufSize);
+
+            sprintf(pKey, "%s%d", key[i], j);
+            sprintf(pBuf, "%s", data[i]);
+
+            if (-1 == InsertData(pKey, pKeySize, pBuf, pBufSize)) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            free(pKey);
+            free(pBuf);
+        }
+
+        for (j = 1; j < (10 >> i) - 1; ++j) {
+            pKeySize = keySize[i] + 1;
+            pKey = (char *) malloc(pKeySize);
+            sprintf(pKey, "%s%d", key[i], j);
+
+            if (-1 == RemoveDataByKey(pKey, pKeySize)) {
+                printf("TestCase 3: Fail\n");
+                return;
+            }
+
+            free(pKey);
+        }
+
+    }
+    PrintBlocks();
+
+    for (i = 0; i < 3; ++i) {
+        pKeySize = keySize[i] + 1;
+        pBufSize = dataSize[i];
+        pTempSize = dataSize[i];
+
+        pKey = (char *) malloc(pKeySize);
+        pBuf = (char *) malloc(pBufSize);
+        pTemp = (char *) malloc(pTempSize);
+
+        sprintf(pKey, "%s%d", key[i], 0);
+        sprintf(pBuf, "%s", data[i]);
+
+        GetDataByKey(pKey, pKeySize, pTemp, pTempSize);
+
+        if (strcmp(pBuf, pTemp) != 0) {
+            printf("TestCase 3: Fail\n");
+            return;
+        }
+
+        if (-1 == RemoveDataByKey(pKey, pKeySize)) {
+            printf("TestCase 3: Fail\n");
+            return;
+        }
+
+        free(pKey);
+        free(pBuf);
+        free(pTemp);
+    }
+//
+//    for (i = 0; i < 3; ++i) {
+//        pKeySize = keySize[i] + 1;
+//        pBufSize = dataSize[i];
+//        pTempSize = dataSize[i];
+//
+//        pKey = (char *) malloc(pKeySize);
+//        pBuf = (char *) malloc(pBufSize);
+//        pTemp = (char *) malloc(pTempSize);
+//
+//        sprintf(pKey, "%s%d", key[i], (10 >> i) - 1);
+//        sprintf(pBuf, "%s", data[i]);
+//
+//        GetDataByKey(pKey, pKeySize, pTemp, pTempSize);
+//
+//        if (strcmp(pBuf, pTemp) != 0) {
+//            printf("TestCase 3: Fail\n");
+//            return;
+//        }
+//
+//        if (-1 == RemoveDataByKey(pKey, pKeySize)) {
+//            printf("TestCase 3: Fail\n");
+//            return;
+//        }
+//
+//        free(pKey);
+//        free(pBuf);
+//        free(pTemp);
+//    }
+//    PrintBlocks();
+
+    printf("TestCase 3: Finish\n");
+}
 
 
-//    printf("removeDataByKey: %d\n\n", RemoveDataByKey("2", 1));
-//    char* pBuf = (char*)malloc(5);
-//    printf("getDataByKey size : %d\n", getDataByKey("1", 1, pBuf, 10000));
-//    printf("pBuf: %s\n", pBuf);
+int main(int argc, char *argv[]) {
+    int tcNum;
+
+    if (argc != 2) {
+        printf("Input TestCase Number!\n");
+        return 0;
+    }
+
+    tcNum = atoi(argv[1]);
+
+    switch (tcNum) {
+        case 1:
+            Init();
+            InitStorage();
+            testcase1();
+            break;
+        case 2:
+            testcase2();
+            break;
+        case 3:
+            InitStorage();
+            testcase3();
+            break;
+    }
 
     return 0;
 }
+
+

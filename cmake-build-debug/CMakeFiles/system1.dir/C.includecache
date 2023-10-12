@@ -11,6 +11,8 @@ sys/types.h
 -
 stdint.h
 -
+hw1.h
+/mnt/c/study-project/system1/hw1.h
 
 /mnt/c/study-project/system1/hw1.c
 stdio.h

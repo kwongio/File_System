@@ -123,6 +123,33 @@ system1/fast:
 	$(MAKE) -f CMakeFiles/system1.dir/build.make CMakeFiles/system1.dir/build
 .PHONY : system1/fast
 
+example.o: example.c.o
+
+.PHONY : example.o
+
+# target to build an object file
+example.c.o:
+	$(MAKE) -f CMakeFiles/system1.dir/build.make CMakeFiles/system1.dir/example.c.o
+.PHONY : example.c.o
+
+example.i: example.c.i
+
+.PHONY : example.i
+
+# target to preprocess a source file
+example.c.i:
+	$(MAKE) -f CMakeFiles/system1.dir/build.make CMakeFiles/system1.dir/example.c.i
+.PHONY : example.c.i
+
+example.s: example.c.s
+
+.PHONY : example.s
+
+# target to generate assembly for a file
+example.c.s:
+	$(MAKE) -f CMakeFiles/system1.dir/build.make CMakeFiles/system1.dir/example.c.s
+.PHONY : example.c.s
+
 hw1.o: hw1.c.o
 
 .PHONY : hw1.o
@@ -186,6 +213,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... system1"
+	@echo "... example.o"
+	@echo "... example.i"
+	@echo "... example.s"
 	@echo "... hw1.o"
 	@echo "... hw1.i"
 	@echo "... hw1.s"

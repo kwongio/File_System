@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/system1.dir/example.c.o"
   "CMakeFiles/system1.dir/hw1.c.o"
   "CMakeFiles/system1.dir/main.c.o"
   "system1"
