@@ -1,6 +1,7 @@
 #ifndef __HW1_H__
 
 #define __HW1_H__
+
 #define MAX_STORAGE_SIZE (65500)
 #define STORAGE_NAME "storage"
 
@@ -11,14 +12,13 @@ typedef enum __BlockState{
 
 
 typedef struct __Block {
-    int blockOffset;		// 블록의 시작 offset
-    int blockState;		// 블록의 상태
-    int sizeHead;		// 블록 헤더에 있는 블록 크기 값
-    int sizeTail;		// 블록 헤더에 있는 블록 크기 값
-    int keySize;		// 키 크기
-    int dataSize;		// 데이트 크기
+    int blockOffset;
+    int blockState;
+    int sizeHead;
+    int sizeTail;
+    int keySize;
+    int dataSize;
 } Block;
-
 
 
 extern void Init(void);

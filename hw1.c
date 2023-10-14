@@ -2,8 +2,7 @@
 #include <unistd.h>
 #include "hw1.h"
 #include <fcntl.h>
-#include "block.h"
-#include <stdlib.h>
+#include "document.h"
 #include <string.h>
 
 

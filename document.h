@@ -11,9 +11,6 @@
 
 #endif //SYSTEM1_BLOCK_H
 
-
-#define MAX_BLOCK_NUM      (1024)
-
 typedef struct Document {
     Block block;
     char blockKey[100] ;

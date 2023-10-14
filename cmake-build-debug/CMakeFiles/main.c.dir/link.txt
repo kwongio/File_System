@@ -1,1 +1,0 @@
-/usr/bin/cc -g  -rdynamic CMakeFiles/main.c.dir/hw1.c.o  -o main.c 
