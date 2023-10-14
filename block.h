@@ -5,13 +5,18 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include "hw1.h"
+
 #ifndef SYSTEM1_BLOCK_H
 #define SYSTEM1_BLOCK_H
 
 #endif //SYSTEM1_BLOCK_H
 
+
 #define MAX_BLOCK_NUM      (1024)
 
-
-int PrintBlocks();
+typedef struct Document {
+    Block block;
+    char blockKey[100] ;
+    char blockData[100];
+} Document;
 

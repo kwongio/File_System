@@ -19,11 +19,6 @@ typedef struct __Block {
     int dataSize;		// 데이트 크기
 } Block;
 
-typedef struct __Blocks {
-    Block block;// 블록
-    char *key; // 키
-    char *data; // 데이터
-} Blocks;
 
 
 extern void Init(void);
@@ -31,7 +26,7 @@ extern int InsertData(char* key, int keySize, char* pBuf, int bufSize);
 extern int GetDataByKey(char* key, int keySize, char* pBuf, int bufSize);
 extern int RemoveDataByKey(char* key, int keySize);
 extern void InitStorage(void);
-extern int GetBlocks(Blocks* pBuf, int bufSize);
-extern void printBlock();
+extern int GetBlocks(Block* pBuf, int bufSize);
+
 
 #endif
